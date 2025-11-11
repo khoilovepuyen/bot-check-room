@@ -1,0 +1,5 @@
+{
+  "bearerToken": "API_KEY",
+  "telegramBotToken": "token bot telee",
+  "intervalMinutes": 5
+}
