@@ -27,6 +27,17 @@ const getUserKsFile = (u) => {
 const todayKey = () => new Date().toISOString().slice(0, 10);
 const monthKey = () => new Date().toISOString().slice(0, 7);
 const diffMinutes = (t) => (Date.now() - new Date(t.replace(" ", "T")).getTime()) / 60000;
+const formatDuration = (minutes) => {
+  const totalMinutes = Math.max(0, minutes);
+  if (totalMinutes >= 60) {
+    const hours = Math.floor(totalMinutes / 60);
+    const mins = Math.floor(totalMinutes % 60);
+    return mins ? `${hours}h${mins}p` : `${hours}h`;
+  }
+  const wholeMinutes = Math.floor(totalMinutes);
+  const seconds = Math.floor((totalMinutes * 60) % 60);
+  return `${wholeMinutes}p${seconds}s`;
+};
 
 async function tgSend(chatId, text, buttons = null) {
   const body = { chat_id: chatId, text, parse_mode: "Markdown" };
@@ -173,8 +184,8 @@ async function pollTelegram() {
         const opened = rooms.filter(r => r.start && r.opened);
         if (!opened.length) { await tgSend(chatId, `📭 Hiện không có phòng nào mở tại *${branch}*.`); continue; }
         const msg = opened.map(r => {
-          const m = Math.floor(diffMinutes(r.start)), s = Math.floor((diffMinutes(r.start)*60)%60);
-          return `🎤 *Phòng ${r.room_code}* (${r.type})\n🕒 ${r.start}\n⏱ ${m}p${s}s\n💰 ${r.revenue_tmp.toLocaleString()}₫`;
+          const duration = formatDuration(diffMinutes(r.start));
+          return `🎤 *Phòng ${r.room_code}* (${r.type})\n🕒 ${r.start}\n⏱ ${duration}\n💰 ${r.revenue_tmp.toLocaleString()}₫`;
         }).join("\n\n");
         await tgSend(chatId, `📋 *Phòng đang mở tại ${branch}*\n\n${msg}\n\n♻️ Reload sau ${intervalMinutes} phút`);
       }
@@ -212,8 +223,8 @@ ${grouped}
         const un = opened.filter(r => !surveyed.has(r.room_code));
         if (!un.length) { await tgSend(chatId, `✅ Tất cả phòng tại *${branch}* đã khảo sát.`); continue; }
         const msg = un.map(r=>{
-          const m=Math.floor(diffMinutes(r.start)), s=Math.floor((diffMinutes(r.start)*60)%60);
-          return `🎤 *${r.room_code}* (${r.type}) – ${m}p${s}s`;
+          const duration = formatDuration(diffMinutes(r.start));
+          return `🎤 *${r.room_code}* (${r.type}) – ${duration}`;
         }).join("\n");
         await tgSend(chatId, `📋 *Phòng chưa khảo sát tại ${branch} (${un.length})*\n\n${msg}`);
       }
@@ -291,8 +302,9 @@ async function checkKSReminders() {
     for(const r of rooms.filter(x=>x.start&&x.opened)){
       const m=diffMinutes(r.start);
       if(m>=30&&m<40&&!surveyed.has(r.room_code)){
+        const durationText = formatDuration(m);
         await tgSend(chatId,
-`🎤 *Phòng ${r.room_code}* (${r.type}) đã chơi *${Math.floor(m)} phút.*
+`🎤 *Phòng ${r.room_code}* (${r.type}) đã chơi *${durationText}*.
 💡 Hãy vào phòng khảo sát và chăm sóc khách nhé bạn!`,
 [[{text:"✅ Đã khảo sát xong",callback_data:`ksxong_${r.room_code}`}]]
         );
