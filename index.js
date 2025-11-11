@@ -1,5 +1,5 @@
 /**
- * 🤖 KSAT BOT v4.8 Final — SmartChat + AutoCommands Edition
+ * BOT v4.8 Final — SmartChat + AutoCommands Edition
  * by Khôi × ChatGPT
  */
 
