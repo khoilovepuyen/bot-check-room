@@ -1,16 +1,16 @@
 /**
- * BOT v4.8 Final — SmartChat + AutoCommands Edition
- * by Khôi × ChatGPT
+ * BOT v1.0 
+ * by Khôi và ChatGPT =))
  */
 
 import fetch from "node-fetch";
 import fs from "fs";
 
-// ========== CONFIG ==========
+// read config
 const config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
 const { bearerToken, telegramBotToken, intervalMinutes = 5 } = config;
 
-// ========== FILES ==========
+// read file
 const usersFile = "./users.json";
 if (!fs.existsSync(usersFile)) fs.writeFileSync(usersFile, "{}");
 let users = JSON.parse(fs.readFileSync(usersFile, "utf8"));
@@ -23,7 +23,7 @@ const getUserKsFile = (u) => {
   return f;
 };
 
-// ========== UTILS ==========
+// UTILS 
 const todayKey = () => new Date().toISOString().slice(0, 10);
 const monthKey = () => new Date().toISOString().slice(0, 7);
 const diffMinutes = (t) => (Date.now() - new Date(t.replace(" ", "T")).getTime()) / 60000;
@@ -66,7 +66,7 @@ const fetchBill = async (store, room) =>
     headers: { Authorization: `Bearer ${bearerToken}` },
   })).json();
 
-// ========== MUTE ==========
+// mute thong bao theo khung gio, theo user
 let muteEnabled = false, muteStart = 1, muteEnd = 8;
 const isMutedNow = () => {
   if (!muteEnabled) return false;
@@ -74,11 +74,11 @@ const isMutedNow = () => {
   return muteStart < muteEnd ? h >= muteStart && h < muteEnd : h >= muteStart || h < muteEnd;
 };
 
-// ========== TELEGRAM POLLING ==========
+// tele polling
 let lastUpdateId = 0;
 let lastCallback = new Set();
 
-// AUTO REGISTER COMMANDS
+// register lenh
 async function registerBotCommands() {
   const commands = [
     { command: "register", description: "Đăng ký chi nhánh" },
@@ -139,7 +139,7 @@ async function pollTelegram() {
       const chatId = msg.chat.id;
       const username = msg.from.username || chatId.toString();
 
-      // REGISTER
+      // dki chi nhanh
       if (text.startsWith("/register")) {
         const store = text.split(" ")[1];
         if (!store) {
@@ -163,7 +163,7 @@ async function pollTelegram() {
       const rooms = await fetchRooms(store);
       const branch = rooms[0]?.store_name || `Chi nhánh ${store}`;
 
-      // HELP
+      // nay la /help
       if (text === "/help") {
         await tgSend(chatId,
 `🤖 *KSAT BOT*  
@@ -179,7 +179,7 @@ async function pollTelegram() {
 💡 /register 24 – Đăng ký chi nhánh`);
       }
 
-      // GET
+      // get xem phong dang mo tai chi nhanh da dki
       else if (text === "/get" || text === "/reload") {
         const opened = rooms.filter(r => r.start && r.opened);
         if (!opened.length) { await tgSend(chatId, `📭 Hiện không có phòng nào mở tại *${branch}*.`); continue; }
@@ -190,7 +190,7 @@ async function pollTelegram() {
         await tgSend(chatId, `📋 *Phòng đang mở tại ${branch}*\n\n${msg}\n\n♻️ Reload sau ${intervalMinutes} phút`);
       }
 
-      // BILL
+      // xem bill
       else if (text.startsWith("/bill")) {
         const code = text.replace("/bill", "").trim();
         if (!code) { await tgSend(chatId, "💡 `/bill <phòng>` (vd: `/bill205`)"); continue; }
@@ -215,7 +215,7 @@ ${grouped}
 💰 *Tổng cộng:* ${total}₫`);
       }
 
-      // KSAT
+      // xem phong chua khao sat am thanh
       else if (text === "/ksat") {
         const opened = rooms.filter(r => r.start && r.opened);
         const today = todayKey();
@@ -229,7 +229,7 @@ ${grouped}
         await tgSend(chatId, `📋 *Phòng chưa khảo sát tại ${branch} (${un.length})*\n\n${msg}`);
       }
 
-      // KSXONG
+      // danh dau khao sat am thanh xong
       else if (text.startsWith("/ksxong")) {
         const code = text.replace("/ksxong","").trim();
         if (!code) { await tgSend(chatId,"💡 `/ksxong <phòng>`"); continue; }
@@ -241,7 +241,7 @@ ${grouped}
         await tgSend(chatId,`✅ *Phòng ${code}* tại *${branch}* đã khảo sát xong.`);
       }
 
-      // THỐNG KÊ
+      // thong ke ksat trong ngay ( cái này còn lỏ lắm kaka )
       else if (text==="/tkeksat") {
         const today=todayKey(); const list=ksLog[today]||[];
         if(!list.length){await tgSend(chatId,`📭 *${branch}* chưa có KS hôm nay.`);continue;}
@@ -257,7 +257,7 @@ ${grouped}
         await tgSend(chatId,`📅 *Thống kê KSAT tại ${branch}*\n\n${msg}`);
       }
 
-      // MUTE
+      // MUTE :>
       else if (text.startsWith("/mute")) {
         const [_, s, e] = text.split(" ");
         if (s && e) {
@@ -289,6 +289,7 @@ async function checkNewRooms() {
   }
 }
 
+// cron nhac nho khao sat
 async function checkKSReminders() {
   if (isMutedNow()) return;
   for (const [u, info] of Object.entries(users)) {
@@ -330,4 +331,4 @@ setInterval(pollTelegram, 3000);
 setInterval(checkKSReminders, intervalMinutes * 60000);
 setInterval(checkNewRooms, intervalMinutes * 60000);
 setInterval(dailySummary, 60000);
-console.log("🤖 KSAT BOT v4.8 Final (SmartChat + AutoCommands) Running...");
+console.log("Server runing on my PC.......");
