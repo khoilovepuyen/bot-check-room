@@ -56,6 +56,7 @@ async function tgAnswerCallback(id, text) {
   });
 }
 
+// api icool
 const fetchRooms = async (store) =>
   (await (await fetch(`https://room.karaoke.com.vn/api/room/?store=${store}`, {
     headers: { Authorization: `Bearer ${bearerToken}` },
